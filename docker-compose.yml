@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: proyecto-db-1
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_DATABASE: glamour
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend # Ruta al directorio donde está el Dockerfile del backend
+    container_name: proyecto-backend-1
+    ports:
+      - "3002:3002" # Exponer el puerto 3001 del contenedor como 3002 en el host
+    env_file:
+      - .env # Asegúrate de que esto esté presente
+    depends_on:
+      - db # Asegura que el contenedor db esté listo antes de iniciar backend
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: crud/steadfast-shell # Ruta al directorio donde está el Dockerfile del frontend
+    container_name: proyecto-frontend-1
+    ports:
+      - "4322:4322"
+    depends_on:
+      - backend # Asegura que el contenedor backend esté listo antes de iniciar frontend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
